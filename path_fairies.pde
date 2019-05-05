@@ -1,25 +1,21 @@
 Fairy[] fairies = new Fairy[500];
 int fairyCount = 0;
-int width = 600;
-int hieght = 400;
-float noiseScale = .025;
-int resolution = 5;
-
-float xOffset = 0;
-float yOffset = 0;
-
+int width = 800;
+int hieght = 600;
 
 void setup() {
-  size(600, 400);
+  size(800, 600);
   colorMode(HSB, 100);
 }
 
 
 void draw() {
   
+  clear();
+  
   noStroke();
-  fill(30, 200, 200, 1);
-  //rect(0, 0, width, height);
+  fill(30, 200, 200, 100);
+  rect(0, 0, width, height);
   
   
   // draw every fairy
@@ -38,7 +34,7 @@ void createNewFairy(int x, int y) {
   
   print("creating a new fairy");
   
-  Fairy newFairy = new Fairy(new Vector2(mouseX, mouseY), 5, 90);
+  Fairy newFairy = new Fairy(new Vector2(x, y), 1, 90);
   
   // add the new fairy to the array
   fairies[fairyCount] = newFairy;
