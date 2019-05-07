@@ -1,8 +1,6 @@
 Fairy[] fairies = new Fairy[500];
 int fairyCount = 0;
 int maxFairies = 200;
-static int width = 800;
-static int height = 600;
 
 void setup() {
   size(800, 600);
@@ -15,7 +13,7 @@ void setup() {
 void draw() {
   
   noStroke();
-  fill(30, 20, 60, 5);
+  fill(30, 20, 60);
   rect(0, 0, width, height);
   
   
@@ -36,8 +34,14 @@ void createNewFairy(int x, int y) {
   
   if (fairyCount > maxFairies) return;
   
-  Fairy newFairy = new Fairy(new Vector2(x, y), 1);
+  Fairy newFairy = new Fairy(new Vector2(x, y), random(.5, 2));
   // add the new fairy to the array
   fairies[fairyCount] = newFairy;
   fairyCount++;
+}
+
+static Vector2 VectorFromAngle(float eulerAngle) {
+  
+    float radians = radians(eulerAngle);
+    return new Vector2(sin(radians), cos(radians));
 }

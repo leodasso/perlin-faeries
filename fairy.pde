@@ -14,6 +14,10 @@ class Fairy {
   float synchPower = 1;
   color myColor = color(0, 10, 255);
   color defaultColor = color(0, 10, 255);
+  color influenceColor = color(100, 25, 255);
+  int bounceBuffer = 0;
+  ArrayList<Vector2> trail = new ArrayList<Vector2>();
+  int maxTrail = 30;
   
   
   Fairy(Vector2 startPos, float startVel) {
@@ -22,20 +26,13 @@ class Fairy {
     forwardVel    = startVel;
     angle         = random(0, 360);
     distOffset   = random(-100, 100);
-    
-    println("new fairy dist offset " + distOffset);
+    size          = random(5, 20);
   }
   
 
   void update() {
     
     //move the fairy forward at the current angle
-    float radians = radians(angle);
-    
-    float x = sin(radians);
-    float y = cos(radians);
-    
-    // calculate distance travelled, add to distTravelled
     distTravelled += forwardVel;
     
     // calculate new angle
@@ -46,17 +43,32 @@ class Fairy {
     if (angle <= 0) angle += 360;
     
     boundaryBounce();
+    if (bounceBuffer > 0) bounceBuffer--;
     
     if (debug) drawDebugInfo();
     
-    pos.sumWith(new Vector2(x * forwardVel, y * forwardVel));
+    // move the fairy forward
+    Vector2 delta = VectorFromAngle(angle);
+    pos.sumWith(new Vector2(delta.x * forwardVel, delta.y * forwardVel));
+    
+    // add the position to the trail
+    trail.add(new Vector2(pos));
+    if (trail.size() > maxTrail) {
+      trail.remove(0);
+    }
+    renderTrail();
  
+    noStroke();
     fill(myColor);
     ellipse(pos.x, pos.y, size, size);
   }
   
   void boundaryBounce() {
-    if (pos.x < 0
+    if (bounceBuffer > 0) return;
+    if (pos.x < 0 || pos.x > width || pos.y < 0 || pos.y > height) {
+      angle += 180;
+      bounceBuffer = 10;
+    }
   }
   
   
@@ -76,11 +88,25 @@ class Fairy {
       // get the degree of influence based on how close they are
       float influence = (synchDistance - distToFairy)/synchDistance;
       
-      stroke(255, 0, 255, 100 * influence);
+      stroke(255, 0, 255, 50 * influence);
       line(pos.x, pos.y, other.pos.x, other.pos.y);
       
-      myColor = color(160, 255, 255);
+      //angle = lerp(angle, other.angle, (influence * other.size) / 100);
       
+      myColor = influenceColor;
+    }
+  }
+  
+  
+  void renderTrail() {
+    
+    for (int i = 0; i < trail.size(); i++) {
+      
+      Vector2 trailPt = trail.get(i);
+      if (trailPt == null) continue;
+      fill(myColor);
+      noStroke();
+      ellipse(trailPt.x, trailPt.y, size, size);
     }
   }
   
