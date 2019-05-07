@@ -12,25 +12,32 @@ class Fairy {
   float turnPower = 20;
   float synchDistance = 100;          // fairies can sync with each other, and will adjust to have the same angle.
   float synchPower = 1;
-  color myColor = color(0, 10, 255);
-  color defaultColor = color(0, 10, 255);
-  color influenceColor = color(100, 25, 255);
+  color myColor;
+  color defaultColor;
+  color influenceColor;
   int bounceBuffer = 0;
   ArrayList<Vector2> trail = new ArrayList<Vector2>();
-  int maxTrail = 30;
+  int maxTrail = 50;
+  int framesElapsed = 0;
+  float myHue = 0;
+  float totalInfluence = 0;
   
   
   Fairy(Vector2 startPos, float startVel) {
     
-    pos           = startPos;
-    forwardVel    = startVel;
-    angle         = random(0, 360);
-    distOffset   = random(-100, 100);
-    size          = random(5, 20);
+    pos = startPos;
+    forwardVel = startVel;
+    angle = random(0, 360);
+    distOffset = random(-100, 100);
+    size = random(5, 20);
+    myHue = random(0, 100);
+    defaultColor = color(myHue, 30, 200);
+    influenceColor = color(myHue, 140, 255);
+    myColor = defaultColor;
   }
   
 
-  void update() {
+  void update(Fairy[] allFairies) {
     
     //move the fairy forward at the current angle
     distTravelled += forwardVel;
@@ -47,12 +54,15 @@ class Fairy {
     
     if (debug) drawDebugInfo();
     
+    synch(allFairies);
+    
     // move the fairy forward
     Vector2 delta = VectorFromAngle(angle);
     pos.sumWith(new Vector2(delta.x * forwardVel, delta.y * forwardVel));
     
     // add the position to the trail
-    trail.add(new Vector2(pos));
+    if (framesElapsed % 6 == 0)
+      trail.add(new Vector2(pos));
     if (trail.size() > maxTrail) {
       trail.remove(0);
     }
@@ -61,6 +71,8 @@ class Fairy {
     noStroke();
     fill(myColor);
     ellipse(pos.x, pos.y, size, size);
+    
+    framesElapsed++;
   }
   
   void boundaryBounce() {
@@ -75,7 +87,7 @@ class Fairy {
   
   void synch(Fairy[] allFairies) {
     
-    myColor = defaultColor;
+    totalInfluence = 0;
     
     for (Fairy other : allFairies) {
       
@@ -87,14 +99,14 @@ class Fairy {
         
       // get the degree of influence based on how close they are
       float influence = (synchDistance - distToFairy)/synchDistance;
+      totalInfluence += influence;
       
       stroke(255, 0, 255, 50 * influence);
       line(pos.x, pos.y, other.pos.x, other.pos.y);
       
-      //angle = lerp(angle, other.angle, (influence * other.size) / 100);
-      
-      myColor = influenceColor;
     }
+    
+    myColor = lerpColor(defaultColor, influenceColor, totalInfluence);
   }
   
   
@@ -104,9 +116,10 @@ class Fairy {
       
       Vector2 trailPt = trail.get(i);
       if (trailPt == null) continue;
-      fill(myColor);
+      fill(defaultColor, 30);
       noStroke();
-      ellipse(trailPt.x, trailPt.y, size, size);
+      float amt = (float)i / trail.size();
+      ellipse(trailPt.x, trailPt.y, size * amt, size * amt);
     }
   }
   
